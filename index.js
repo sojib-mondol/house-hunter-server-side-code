@@ -58,8 +58,8 @@ async function run() {
     }
   });
 
-   // get House Renter role
-   app.get("/users/house-renter/:email", async (req, res) => {
+  // get House Renter role
+  app.get("/users/house-renter/:email", async (req, res) => {
     try {
       await client.connect();
       const db = client.db("house-hunter");
@@ -75,7 +75,42 @@ async function run() {
     }
   });
 
-  
+  // post api
+  app.post("/houses", async (req, res) => {
+    try {
+      await client.connect(); // Use the existing database client
+      const db = client.db("house-hunter");
+      const housesCollection = db.collection("houses");
+      const house = req.body;
+      const result = await housesCollection.insertOne(house);
+      res.send(result);
+    } catch (error) {
+      console.error("get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    } finally {
+    }
+  });
+
+  // get api
+  app.get("/houses/:email", async (req, res) => {
+    try {
+      await client.connect(); // Use the existing database client
+      const db = client.db("house-hunter");
+      const housesCollection = db.collection("houses");
+
+      const email = req.params.email;
+      const query = { email };
+
+      const result = await housesCollection.find(query).toArray();
+      res.send(result);
+
+      
+    } catch (error) {
+      console.error("get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    } finally {
+    }
+  });
 
   // Register endpoint
   app.post("/register", async (req, res) => {
