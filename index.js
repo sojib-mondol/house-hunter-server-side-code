@@ -103,12 +103,79 @@ async function run() {
 
       const result = await housesCollection.find(query).toArray();
       res.send(result);
-
-      
     } catch (error) {
       console.error("get user error:", error);
       res.status(500).json({ message: "Internal server error" });
     } finally {
+    }
+  });
+
+  // delete a houses
+  app.delete("/house/:id", async (req, res) => {
+    try {
+      await client.connect(); // Use the existing database client
+      const db = client.db("house-hunter");
+      const housesCollection = db.collection("houses");
+
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await housesCollection.deleteOne(query);
+      res.send(result);
+    } catch (error) {
+      console.error("get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    } finally {
+    }
+  });
+
+  // get house by id
+  app.get("/house/:id", async (req, res) => {
+    try {
+      await client.connect(); // Use the existing database client
+      const db = client.db("house-hunter");
+      const housesCollection = db.collection("houses");
+
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await housesCollection.findOne(query);
+
+      res.send(result);
+    } catch (error) {
+      res.send({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
+
+  // update the user
+  app.put("/update/:id", async (req, res) => {
+    try {
+      await client.connect(); // Use the existing database client
+      const db = client.db("house-hunter");
+      const housesCollection = db.collection("houses");
+      const id = req.params.id;
+      const addHouse = req.body;
+      const fields = Object.keys(addHouse);
+      const existField = fields.filter((each) => addHouse[each]);
+      let updateValue = {};
+      existField.forEach((each) => {
+        updateValue[each] = addHouse[each];
+      });
+
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: updateValue,
+      };
+      const result = await housesCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    } catch (error) {
+      res.send({
+        success: false,
+        error: error.message,
+      });
     }
   });
 
