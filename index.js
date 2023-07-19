@@ -41,10 +41,46 @@ async function run() {
     }
   });
 
+  // get House Owner role
+  app.get("/users/house-owner/:email", async (req, res) => {
+    try {
+      await client.connect();
+      const db = client.db("house-hunter");
+      const usersCollection = db.collection("users");
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isHouseOwner: user?.role === "House Owner" });
+    } catch (error) {
+      console.error("get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    } finally {
+    }
+  });
+
+   // get House Renter role
+   app.get("/users/house-renter/:email", async (req, res) => {
+    try {
+      await client.connect();
+      const db = client.db("house-hunter");
+      const usersCollection = db.collection("users");
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isHouseRenter: user?.role === "House Renter" });
+    } catch (error) {
+      console.error("get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    } finally {
+    }
+  });
+
+  
+
   // Register endpoint
   app.post("/register", async (req, res) => {
     try {
-      const { fullName, role, phoneNumber, email, password } = req.body;
+      const { name, phone, role, email, password } = req.body;
 
       // Connect to MongoDB
       await client.connect();
@@ -60,9 +96,9 @@ async function run() {
       const hashedPassword = await bcrypt.hash(password, 10);
       // Create a new user object
       const newUser = {
-        fullName,
+        name,
+        phone,
         role,
-        phoneNumber,
         email,
         password: hashedPassword,
       };
